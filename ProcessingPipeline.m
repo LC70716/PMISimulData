@@ -92,26 +92,33 @@ for i = 1:numel(file_list)
         all_PSF_Light(i,1) = NaN;
         PSFx = 2.3548 * pd.std;
         PSFy = 2.3548 * pd1.std;
-        all_PSF_Light_ANI(i,1) = PSFx;
-        all_PSF_Light_ANI(i,2) = PSFy;
+        all_PSF_NoLight_ANI(i,1) = PSFx;
+        all_PSF_NoLight_ANI(i,2) = PSFy;
      end
 
 end
 % Save p-values and PSFs to a file in the same directory
-save('computed_results.mat', 'all_p_values_Light','all_p_values_NoLight', 'all_PSF_Light', 'all_PSF_NoLight','num_detected','all_sens');
+save('computed_results.mat', 'all_p_values_Light','all_p_values_NoLight', 'all_PSF_Light', 'all_PSF_NoLight','num_detected','all_sens','all_PSF_Light_ANI','all_PSF_NoLight_ANI');
 all_PSF_NoLight = rmmissing(all_PSF_NoLight);
 all_PSF_Light = rmmissing(all_PSF_Light);
 all_PSF_NoLight_ANI = rmmissing(all_PSF_NoLight_ANI);
 all_PSF_Light_ANI = rmmissing(all_PSF_Light_ANI);
-
+mean_PSF_Light_ANI = zeros(1,2);
+std_PSF_Light_ANI = zeros(1,2);
+mean_PSF_NoLight_ANI = zeros(1,2);
+std_PSF_NoLight_ANI = zeros(1,2);
 mean_PSF_NoLight = mean(all_PSF_NoLight);
 std_PSF_NoLight = std(all_PSF_NoLight);
 mean_PSF_Light = mean(all_PSF_Light);
 std_PSF_Light = std(all_PSF_Light);
-mean_PSF_NoLight_ANI = mean(all_PSF_NoLight_ANI);
-std_PSF_NoLight_ANI = std(all_PSF_NoLight_ANI);
-mean_PSF_Light_ANI = mean(all_PSF_Light_ANI);
-std_PSF_Light_ANI = std(all_PSF_Light_ANI);
+mean_PSF_NoLight_ANI(1,1) = mean(all_PSF_NoLight_ANI(:,1));
+std_PSF_NoLight_ANI(1,1) = std(all_PSF_NoLight_ANI(:,1));
+mean_PSF_NoLight_ANI(1,2) = mean(all_PSF_NoLight_ANI(:,2));
+std_PSF_NoLight_ANI(1,2) = std(all_PSF_NoLight_ANI(:,2));
+mean_PSF_Light_ANI(1,1) = mean(all_PSF_Light_ANI(:,1));
+std_PSF_Light_ANI(1,1) = std(all_PSF_Light_ANI(:,1));
+mean_PSF_Light_ANI(1,2) = mean(all_PSF_Light_ANI(:,2));
+std_PSF_Light_ANI(1,2) = std(all_PSF_Light_ANI(:,2));
 mean_numdetected = mean(num_detected);
 std_numdetected = std(num_detected);
 mean_pvalue_Light = mean(all_p_values_Light);
