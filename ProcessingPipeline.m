@@ -21,7 +21,7 @@ for i = 1:numel(file_list)
     % Open the file
     filename = file_list(i).name;
     fid = fopen(filename);
-
+    
     % Read and reshape data 
     [A,count] = fread(fid,'*single','n');
     fclose(fid);
