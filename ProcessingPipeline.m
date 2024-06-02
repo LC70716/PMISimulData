@@ -143,8 +143,6 @@ means = zeros(3, 2, 3);  % Preallocate for efficiency (x, y, color groups)
 groupLabels = {'A', 'B', 'C'};
 colorLabels = [5, 10, 15];
 numLabels = [2, 10];  % Vector for y-axis labels (2 and 10)
-colorLabels_ = ['5 cm', '10 cm', '15 cm'];
-numLabels_ = ['2 mm', '10 mm'];  % Vector for y-axis labels (2 and 10)
 
 % Data Extraction Loop
 for groupIdx = 1:3  
@@ -175,7 +173,7 @@ x_tick_positions = (1:num_groups) + (num_bars_per_group - 1) / 2;
 
 % Customization and Labels
 xlabel('Geometry (A, B, C)');
-ylabel('Mean Value');
+ylabel('PSF (cm)');
 set(gca, 'XTick', x_tick_positions, 'XTickLabel', groupLabels);  % Align ticks with group centers
 
 
@@ -202,8 +200,6 @@ stds = zeros(3, 2, 3);   % Preallocate for standard deviations
 groupLabels = {'A', 'B', 'C'};
 colorLabels = [5, 10, 15];
 numLabels = [2, 10]; 
-colorLabels_ = ['5 cm', '10 cm', '15 cm'];
-numLabels_ = ['2 mm', '10 mm'];
 
 % Data Extraction Loop (Now with Standard Deviations)
 for groupIdx = 1:3
@@ -236,3 +232,26 @@ for i = 1:numel(bar_handles)
     x = bar_handles(i).XEndPoints; % Get bar x-coordinates
     errorbar(x, grouped_means(:,i), grouped_stds(:,i), 'k', 'linestyle', 'none'); % 'k' for black error bars
 end
+
+% Customization and Labels
+xlabel('Geometry (A, B, C)');
+ylabel('PSF (cm)');
+set(gca, 'XTick', x_tick_positions, 'XTickLabel', groupLabels);  % Align ticks with group centers
+
+
+% Custom Colormap 
+color_map = ['r','g','b','c','y','m']; % Define your colors here
+
+% Assign Colors to Bars
+for i = 1:numel(bar_handles)
+    bar_handles(i).FaceColor = color_map(i);  
+end
+
+% Add Legend with Number and Color Labels
+legend_labels = cell(1, 6);
+for i = 1:2  % Iterate over numbers (2 and 10)
+    for j = 1:3 % Iterate over colors
+        legend_labels{(i-1)*3 + j} = [num2str(numLabels(i)), ' mm - ', num2str(colorLabels(j)), ' cm']; 
+    end
+end
+legend(bar_handles, legend_labels);
