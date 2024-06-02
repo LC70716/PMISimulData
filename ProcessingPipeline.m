@@ -136,4 +136,60 @@ end
 %scatter(ntuple(:,10),ntuple(:,11),'.')
 % 3D scatter plot
 %scatter3(ntuple(:,10),ntuple(:,11),ntuple(:,12),'.')
+%% 
 % 
+% Data Preparation
+means = zeros(3, 2, 3);  % Preallocate for efficiency (x, y, color groups)
+groupLabels = {'A', 'B', 'C'};
+colorLabels = [5, 10, 15];
+numLabels = [2, 10];  % Vector for y-axis labels (2 and 10)
+
+% Data Extraction Loop
+for groupIdx = 1:3  
+    for numIdx = 1:2 
+        for colorIdx = 1:3
+            folderName = strcat('geom_', num2str(colorLabels(colorIdx)), '_',num2str(numLabels(numIdx)), '_', groupLabels(groupIdx)); 
+            load(strcat(folderName{1},'/','mean_and_stds.mat'));
+            means(groupIdx, numIdx, colorIdx) = mean_PSF_Light;  
+        end
+    end
+end
+
+
+% Visualization (2D Grouped Bar Chart with Colors)
+figure;
+hold on;
+
+% Reshape Data for Grouped Plotting (2D)
+grouped_means = reshape(means, 3, []); % 3 rows (groups), 6 columns (number-color combinations)
+
+% Create Bar Groups
+bar_handles = bar(grouped_means, 'grouped');
+
+% Calculate X-Tick Positions (for Correct Alignment)
+num_groups = size(grouped_means, 1);
+num_bars_per_group = size(grouped_means, 2);
+x_tick_positions = (1:num_groups) + (num_bars_per_group - 1) / 2; 
+
+% Customization and Labels
+xlabel('Group Label (A, B, C)');
+ylabel('Mean Value');
+set(gca, 'XTick', x_tick_positions, 'XTickLabel', groupLabels);  % Align ticks with group centers
+
+
+% Custom Colormap 
+color_map = ['r','g','b','c','y','m']; % Define your colors here
+
+% Assign Colors to Bars
+for i = 1:numel(bar_handles)
+    bar_handles(i).FaceColor = color_map(i);  
+end
+
+% Add Legend with Number and Color Labels
+legend_labels = cell(1, 6);
+for i = 1:2  % Iterate over numbers (2 and 10)
+    for j = 1:3 % Iterate over colors
+        legend_labels{(i-1)*3 + j} = [num2str(numLabels(i)), ' - ', num2str(colorLabels(j))]; 
+    end
+end
+legend(bar_handles, legend_labels);

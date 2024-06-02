@@ -1,3 +1,6 @@
+%this is a modified version of the script provided by professor Lanconelli
+%for the Physics of Medical imaging course labs A.Y: 23/24, Applied
+%Physics, UNIBO
 clear all
 directory_path = uigetdir();
 numpart = 10000000;
@@ -18,7 +21,7 @@ for i = 1:numel(file_list)
     % Open the file
     filename = file_list(i).name;
     fid = fopen(filename);
-
+    
     % Read and reshape data 
     [A,count] = fread(fid,'*single','n');
     fclose(fid);
@@ -89,33 +92,99 @@ for i = 1:numel(file_list)
         all_PSF_Light(i,1) = NaN;
         PSFx = 2.3548 * pd.std;
         PSFy = 2.3548 * pd1.std;
-        all_PSF_Light_ANI(i,1) = PSFx;
-        all_PSF_Light_ANI(i,2) = PSFy;
+        all_PSF_NoLight_ANI(i,1) = PSFx;
+        all_PSF_NoLight_ANI(i,2) = PSFy;
      end
 
 end
 % Save p-values and PSFs to a file in the same directory
-save('computed_results.mat', 'all_p_values_Light','all_p_values_NoLight', 'all_PSF_Light', 'all_PSF_NoLight','num_detected','all_sens');
+save('computed_results.mat', 'all_p_values_Light','all_p_values_NoLight', 'all_PSF_Light', 'all_PSF_NoLight','num_detected','all_sens','all_PSF_Light_ANI','all_PSF_NoLight_ANI');
 all_PSF_NoLight = rmmissing(all_PSF_NoLight);
 all_PSF_Light = rmmissing(all_PSF_Light);
 all_PSF_NoLight_ANI = rmmissing(all_PSF_NoLight_ANI);
 all_PSF_Light_ANI = rmmissing(all_PSF_Light_ANI);
-
+mean_PSF_Light_ANI = zeros(1,2);
+std_PSF_Light_ANI = zeros(1,2);
+mean_PSF_NoLight_ANI = zeros(1,2);
+std_PSF_NoLight_ANI = zeros(1,2);
 mean_PSF_NoLight = mean(all_PSF_NoLight);
 std_PSF_NoLight = std(all_PSF_NoLight);
 mean_PSF_Light = mean(all_PSF_Light);
 std_PSF_Light = std(all_PSF_Light);
-mean_PSF_NoLight_ANI = mean(all_PSF_NoLight_ANI);
-std_PSF_NoLight_ANI = std(all_PSF_NoLight_ANI);
-mean_PSF_Light_ANI = mean(all_PSF_Light_ANI);
-std_PSF_Light_ANI = std(all_PSF_Light_ANI);
+mean_PSF_NoLight_ANI(1,1) = mean(all_PSF_NoLight_ANI(:,1));
+std_PSF_NoLight_ANI(1,1) = std(all_PSF_NoLight_ANI(:,1));
+mean_PSF_NoLight_ANI(1,2) = mean(all_PSF_NoLight_ANI(:,2));
+std_PSF_NoLight_ANI(1,2) = std(all_PSF_NoLight_ANI(:,2));
+mean_PSF_Light_ANI(1,1) = mean(all_PSF_Light_ANI(:,1));
+std_PSF_Light_ANI(1,1) = std(all_PSF_Light_ANI(:,1));
+mean_PSF_Light_ANI(1,2) = mean(all_PSF_Light_ANI(:,2));
+std_PSF_Light_ANI(1,2) = std(all_PSF_Light_ANI(:,2));
 mean_numdetected = mean(num_detected);
 std_numdetected = std(num_detected);
-mean_pvalue = mean(all_PSF_NoLight);
-std_PSF_NoLight = std(all_PSF_NoLight);
+mean_pvalue_Light = mean(all_p_values_Light);
+std_pvalue_Light = std(all_p_values_Light);
+mean_pvalue_NoLight = mean(all_p_values_NoLight);
+std_pvalue_NoLight = std(all_p_values_NoLight);
+
+save('mean_and_stds.mat', 'mean_PSF_NoLight', 'std_PSF_NoLight', 'mean_PSF_Light', ...
+    'std_PSF_Light', 'mean_PSF_NoLight_ANI', 'std_PSF_NoLight_ANI', ...
+    'mean_PSF_Light_ANI', 'std_PSF_Light_ANI', 'mean_numdetected', ...
+    'std_numdetected', 'mean_pvalue_Light', 'std_pvalue_Light', ...
+    'mean_pvalue_NoLight', 'std_pvalue_NoLight');
 % 2D scatter plot
 end
 %scatter(ntuple(:,10),ntuple(:,11),'.')
 % 3D scatter plot
 %scatter3(ntuple(:,10),ntuple(:,11),ntuple(:,12),'.')
+%% 
 % 
+% Data Preparation
+means = zeros(3, 2, 3);  % Preallocate for efficiency (x, y, color groups)
+groupLabels = {'A', 'B', 'C'};
+colorLabels = [5, 10, 15];
+numLabels = [2, 10];  % Vector for y-axis labels (2 and 10)
+
+% Data Extraction Loop
+for groupIdx = 1:3  
+    for numIdx = 1:2 
+        for colorIdx = 1:3
+            folderName = strcat('geom_', num2str(colorLabels(colorIdx)), '_',num2str(numLabels(numIdx)), '_', groupLabels(groupIdx)); 
+            load(strcat(folderName{1},'/','mean_and_stds.mat'));
+            means(groupIdx, numIdx, colorIdx) = mean_PSF_Light;  
+        end
+    end
+end
+
+
+% Visualization (2D Grouped Bar Chart with Colors)
+figure;
+hold on;
+
+% Reshape Data for Grouped Plotting (2D)
+grouped_means = reshape(means, 3, []); % 3 rows (groups), 6 columns (number-color combinations)
+
+% Create Bar Groups
+bar_handles = bar(grouped_means, 'grouped');
+
+% Customization and Labels
+xlabel('Group Label (A, B, C)');
+ylabel('Mean Value');
+set(gca, 'XTickLabel', groupLabels);  % Set x-axis labels
+
+% Custom Colormap 
+color_map = ['r','g','b','c','y','m']; % Define your colors here
+colormap(color_map);
+
+% Assign Colors to Bars
+for i = 1:numel(bar_handles)
+    bar_handles(i).FaceColor = color_map(i);  
+end
+
+% Add Legend with Number and Color Labels
+legend_labels = cell(1, 6);
+for i = 1:2  % Iterate over numbers (2 and 10)
+    for j = 1:3 % Iterate over colors
+        legend_labels{(i-1)*3 + j} = [num2str(numLabels(i)), ' - ', num2str(colorLabels(j))]; 
+    end
+end
+legend(bar_handles, legend_labels);
