@@ -143,6 +143,8 @@ means = zeros(3, 2, 3);  % Preallocate for efficiency (x, y, color groups)
 groupLabels = {'A', 'B', 'C'};
 colorLabels = [5, 10, 15];
 numLabels = [2, 10];  % Vector for y-axis labels (2 and 10)
+colorLabels_ = ['5 cm', '10 cm', '15 cm'];
+numLabels_ = ['2 mm', '10 mm'];  % Vector for y-axis labels (2 and 10)
 
 % Data Extraction Loop
 for groupIdx = 1:3  
@@ -172,7 +174,7 @@ num_bars_per_group = size(grouped_means, 2);
 x_tick_positions = (1:num_groups) + (num_bars_per_group - 1) / 2; 
 
 % Customization and Labels
-xlabel('Group Label (A, B, C)');
+xlabel('Geometry (A, B, C)');
 ylabel('Mean Value');
 set(gca, 'XTick', x_tick_positions, 'XTickLabel', groupLabels);  % Align ticks with group centers
 
@@ -189,7 +191,48 @@ end
 legend_labels = cell(1, 6);
 for i = 1:2  % Iterate over numbers (2 and 10)
     for j = 1:3 % Iterate over colors
-        legend_labels{(i-1)*3 + j} = [num2str(numLabels(i)), ' - ', num2str(colorLabels(j))]; 
+        legend_labels{(i-1)*3 + j} = [num2str(numLabels(i)), ' mm - ', num2str(colorLabels(j)), ' cm']; 
     end
 end
 legend(bar_handles, legend_labels);
+%% 
+% Data Preparation
+means = zeros(3, 2, 3);  % Preallocate for efficiency (x, y, color groups)
+stds = zeros(3, 2, 3);   % Preallocate for standard deviations
+groupLabels = {'A', 'B', 'C'};
+colorLabels = [5, 10, 15];
+numLabels = [2, 10]; 
+colorLabels_ = ['5 cm', '10 cm', '15 cm'];
+numLabels_ = ['2 mm', '10 mm'];
+
+% Data Extraction Loop (Now with Standard Deviations)
+for groupIdx = 1:3
+    for numIdx = 1:2
+        for colorIdx = 1:3
+            folderName = strcat('geom_', num2str(colorLabels(colorIdx)), '_',num2str(numLabels(numIdx)), '_', groupLabels(groupIdx));
+            load(strcat(folderName{1},'/','mean_and_stds.mat'));
+            means(groupIdx, numIdx, colorIdx) = mean_PSF_Light;
+            stds(groupIdx, numIdx, colorIdx) = std_PSF_Light;  % Extract std
+        end
+    end
+end
+
+% Visualization (2D Grouped Bar Chart with Colors and Error Bars)
+figure;
+hold on;
+grouped_means = reshape(means, 3, []);
+grouped_stds = reshape(stds, 3, []);  % Reshape standard deviations
+
+% Create Bar Groups
+bar_handles = bar(grouped_means, 'grouped');
+
+% Calculate X-Tick Positions
+num_groups = size(grouped_means, 1);
+num_bars_per_group = size(grouped_means, 2);
+x_tick_positions = (1:num_groups) + (num_bars_per_group - 1) / 2;
+
+% Add Error Bars 
+for i = 1:numel(bar_handles)
+    x = bar_handles(i).XEndPoints; % Get bar x-coordinates
+    errorbar(x, grouped_means(:,i), grouped_stds(:,i), 'k', 'linestyle', 'none'); % 'k' for black error bars
+end

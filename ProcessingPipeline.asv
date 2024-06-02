@@ -143,6 +143,8 @@ means = zeros(3, 2, 3);  % Preallocate for efficiency (x, y, color groups)
 groupLabels = {'A', 'B', 'C'};
 colorLabels = [5, 10, 15];
 numLabels = [2, 10];  % Vector for y-axis labels (2 and 10)
+colorLabels_ = ['5 cm', '10 cm', '15 cm'];
+numLabels_ = ['2 mm', '10 mm'];  % Vector for y-axis labels (2 and 10)
 
 % Data Extraction Loop
 for groupIdx = 1:3  
@@ -166,14 +168,19 @@ grouped_means = reshape(means, 3, []); % 3 rows (groups), 6 columns (number-colo
 % Create Bar Groups
 bar_handles = bar(grouped_means, 'grouped');
 
+% Calculate X-Tick Positions (for Correct Alignment)
+num_groups = size(grouped_means, 1);
+num_bars_per_group = size(grouped_means, 2);
+x_tick_positions = (1:num_groups) + (num_bars_per_group - 1) / 2; 
+
 % Customization and Labels
 xlabel('Group Label (A, B, C)');
 ylabel('Mean Value');
-set(gca, 'XTickLabel', groupLabels);  % Set x-axis labels
+set(gca, 'XTick', x_tick_positions, 'XTickLabel', groupLabels);  % Align ticks with group centers
+
 
 % Custom Colormap 
 color_map = ['r','g','b','c','y','m']; % Define your colors here
-colormap(color_map);
 
 % Assign Colors to Bars
 for i = 1:numel(bar_handles)
@@ -184,7 +191,7 @@ end
 legend_labels = cell(1, 6);
 for i = 1:2  % Iterate over numbers (2 and 10)
     for j = 1:3 % Iterate over colors
-        legend_labels{(i-1)*3 + j} = [num2str(numLabels(i)), ' - ', num2str(colorLabels(j))]; 
+        legend_labels{i*3-2} = [num2str(numLabels(i)), ' ', (i==1 ? 'mm' : 'cm')]; 
     end
 end
 legend(bar_handles, legend_labels);
